@@ -1,0 +1,10 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+*.db
+# runtime uploads (keep the folder structure + demo images)
+uploads/entries/*
+!uploads/entries/.gitkeep
+app/ai/weights/*.pt

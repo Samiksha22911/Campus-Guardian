@@ -1,0 +1,11 @@
+# Heavy dependencies for the REAL AI pipeline (MOCK_AI=false).
+# Install ON TOP of requirements.txt:   pip install -r requirements-ai.txt
+#
+# Tip for servers without a GPU: install the much smaller CPU build of torch
+# first, then the rest:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+ultralytics>=8.3.0
+easyocr>=1.7.1
+torch>=2.2.0
+facenet-pytorch>=2.5.3
+pillow>=10.0.0

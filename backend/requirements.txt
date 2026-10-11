@@ -1,0 +1,18 @@
+# Core API + the lightweight image libraries the app imports at startup.
+# This is everything you need to run with MOCK_AI=true (the default).
+fastapi
+uvicorn[standard]
+sqlalchemy
+pymysql
+python-dotenv
+pydantic[email]
+pydantic-settings
+python-multipart
+passlib[bcrypt]
+bcrypt==4.0.1
+python-jose[cryptography]
+
+# The AI modules import these at module level even in mock mode.
+# "headless" = OpenCV without GUI libs, so it installs cleanly on servers/Docker.
+numpy>=1.26.0
+opencv-python-headless>=4.9.0
