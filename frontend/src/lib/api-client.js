@@ -1,4 +1,5 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// Set VITE_API_URL at build time (see .env.example). A trailing slash is tolerated.
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/+$/, "");
 const TOKEN_KEY = "campus-guardian-token";
 const STUDENT_TOKEN_KEY = "campus-guardian-student-token";
 

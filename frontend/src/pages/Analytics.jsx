@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+
 import { useEffect, useState } from "react";
 import {
   Bar,
@@ -17,24 +17,6 @@ import { PageHeader } from "@/components/app/AppShell";
 import { Card, StatCard } from "@/components/app/shared";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
-
-export const Route = createFileRoute("/_app/analytics")({
-  head: () => ({
-    meta: [
-      { title: "Analytics — Campus Guardian AI" },
-      {
-        name: "description",
-        content:
-          "Campus entry analytics: grant rate, peak traffic hours, per-gate volume and detection confidence trends.",
-      },
-      { property: "og:title", content: "Analytics — Campus Guardian AI" },
-      { property: "og:description", content: "Trends across every verified campus gate entry." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: AnalyticsPage,
-});
 
 const OUTCOME_COLORS = {
   Granted: "var(--success)",
@@ -170,3 +152,5 @@ function AnalyticsPage() {
     </div>
   );
 }
+
+export default AnalyticsPage;

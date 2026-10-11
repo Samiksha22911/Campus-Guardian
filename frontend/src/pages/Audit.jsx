@@ -1,27 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/app/AppShell";
 import { Badge2, DataTable } from "@/components/app/shared";
 import { api } from "@/lib/api-client";
 import { fmtDateTime } from "@/lib/campus-data";
 import { toast } from "sonner";
-
-export const Route = createFileRoute("/_app/audit")({
-  head: () => ({
-    meta: [
-      { title: "Audit Logs — Campus Gate AI" },
-      {
-        name: "description",
-        content: "Immutable trail of every account, student, vehicle and verification change made in the console.",
-      },
-      { property: "og:title", content: "Audit Logs — Campus Gate AI" },
-      { property: "og:description", content: "Who changed what, and when, across Campus Gate AI." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: AuditPage,
-});
 
 const sel = "rounded-md border border-border bg-surface-2 px-2 py-1 font-mono text-xs";
 
@@ -113,3 +96,5 @@ function AuditPage() {
     </div>
   );
 }
+
+export default AuditPage;

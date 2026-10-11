@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import camGate from "@/assets/cam-gate.jpg";
 import camVehicle from "@/assets/cam-vehicle.jpg";
@@ -11,35 +11,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useApp } from "@/lib/app-store";
-
-export const Route = createFileRoute("/_app/enrollment")({
-  head: () => ({
-    meta: [
-      { title: "Enrollment Wizard — Campus Guardian AI" },
-      {
-        name: "description",
-        content:
-          "Guided enrollment: capture student details, register face embeddings, link vehicle plates and record biometric consent.",
-      },
-      {
-        property: "og:title",
-        content: "Enrollment Wizard — Campus Guardian AI",
-      },
-      {
-        property: "og:description",
-        content:
-          "Enroll a student's face and vehicles for touchless gate verification.",
-      },
-      { property: "og:type", content: "website" },
-      {
-        name: "twitter:card",
-        content: "summary_large_image",
-      },
-    ],
-  }),
-
-  component: EnrollmentPage,
-});
 
 const STEPS = [
   "Student details",
@@ -403,7 +374,7 @@ function EnrollmentPage() {
                       description: `${sid} · face + ${plate || "no vehicle"}`,
                     });
 
-                    navigate({ to: "/students" });
+                    navigate("/students");
                   } catch (err) {
                     toast.error("Enrollment failed", { description: err.message });
                   } finally {
@@ -420,3 +391,5 @@ function EnrollmentPage() {
     </div>
   );
 }
+
+export default EnrollmentPage;

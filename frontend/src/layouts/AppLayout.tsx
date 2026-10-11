@@ -1,12 +1,8 @@
-import { Outlet, createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { AppShell } from "@/components/app/AppShell";
 import { can, useApp } from "@/lib/app-store";
 import { Button } from "@/components/ui/button";
-
-export const Route = createFileRoute("/_app")({
-  component: AppLayout,
-});
 
 const PERM_BY_PATH: Record<string, string> = {
   "/dashboard": "dashboard",
@@ -25,10 +21,10 @@ const PERM_BY_PATH: Record<string, string> = {
 function AppLayout() {
   const { user, hydrated } = useApp();
   const navigate = useNavigate();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { pathname } = useLocation();
 
   useEffect(() => {
-    if (hydrated && !user) navigate({ to: "/login", replace: true });
+    if (hydrated && !user) navigate("/login", { replace: true });
   }, [hydrated, user, navigate]);
 
   if (!hydrated || !user) {
@@ -50,7 +46,7 @@ function AppLayout() {
             <p className="mt-1 text-sm text-muted-foreground">
               Your role does not have access to this page.
             </p>
-            <Button className="mt-5" onClick={() => navigate({ to: "/dashboard" })}>
+            <Button className="mt-5" onClick={() => navigate("/dashboard")}>
               Back to dashboard
             </Button>
           </div>
@@ -65,3 +61,5 @@ function AppLayout() {
     </AppShell>
   );
 }
+
+export default AppLayout;

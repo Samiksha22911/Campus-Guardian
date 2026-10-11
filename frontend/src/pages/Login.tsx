@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useApp } from "@/lib/app-store";
 import { Input } from "@/components/ui/input";
@@ -7,24 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ShieldCheck } from "lucide-react";
 import { ThemeToggleButton } from "@/components/app/ThemeToggleButton";
-
-export const Route = createFileRoute("/login")({
-  head: () => ({
-    meta: [
-      { title: "Sign in — Campus Gate AI Security Console" },
-      {
-        name: "description",
-        content:
-          "Secure sign-in for the Campus Gate AI console: face verification, ANPR and CCTV monitoring for campus entry control.",
-      },
-      { property: "og:title", content: "Sign in — Campus Gate AI" },
-      { property: "og:description", content: "Operator sign-in for the AI campus entry verification console." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: LoginPage,
-});
 
 function LoginPage() {
   const { login, user, hydrated } = useApp();
@@ -36,7 +18,7 @@ function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (hydrated && user) navigate({ to: "/dashboard", replace: true });
+    if (hydrated && user) navigate("/dashboard", { replace: true });
   }, [hydrated, user, navigate]);
 
   return (
@@ -64,7 +46,7 @@ function LoginPage() {
             const res = await login(email, password);
             setSubmitting(false);
             if (!res.ok) setError(res.error ?? "Sign-in failed");
-            else navigate({ to: "/dashboard" });
+            else navigate("/dashboard");
           }}
         >
           <div className="space-y-1.5">
@@ -115,3 +97,5 @@ function LoginPage() {
     </div>
   );
 }
+
+export default LoginPage;

@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,19 +7,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ShieldCheck } from "lucide-react";
 import { ThemeToggleButton } from "@/components/app/ThemeToggleButton";
 import { api, setStudentToken } from "@/lib/api-client";
-
-export const Route = createFileRoute("/register")({
-  head: () => ({
-    meta: [
-      { title: "Register your vehicle — Campus Gate AI" },
-      {
-        name: "description",
-        content: "Self-register your student profile and vehicle for automated campus gate entry.",
-      },
-    ],
-  }),
-  component: RegisterPage,
-});
 
 const sel = "rounded-md border border-border bg-surface-2 px-2 py-1.5 font-mono text-xs w-full";
 
@@ -101,7 +88,7 @@ function RegisterPage() {
             Your profile and vehicle are now <span className="font-medium text-foreground">pending approval</span>{" "}
             by campus admin/security. You won't be able to enter through the AI gate until it's approved.
           </p>
-          <Button className="mt-6 w-full" onClick={() => navigate({ to: "/portal" })}>
+          <Button className="mt-6 w-full" onClick={() => navigate("/portal")}>
             Check my status
           </Button>
         </div>
@@ -249,3 +236,5 @@ function RegisterPage() {
     </div>
   );
 }
+
+export default RegisterPage;

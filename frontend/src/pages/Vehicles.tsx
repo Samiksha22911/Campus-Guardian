@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/app/AppShell";
 import {
@@ -16,24 +16,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-
-export const Route = createFileRoute("/_app/vehicles")({
-  head: () => ({
-    meta: [
-      { title: "Vehicle Management — Campus Gate AI" },
-      {
-        name: "description",
-        content:
-          "Vehicle registry for ANPR gate control: owners, active status, blocklist flags and per-plate entry history.",
-      },
-      { property: "og:title", content: "Vehicle Management — Campus Gate AI" },
-      { property: "og:description", content: "Manage registered plates, blocklists and vehicle-to-student links." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: VehiclesPage,
-});
 
 const sel = "rounded-md border border-border bg-surface-2 px-2 py-1 font-mono text-xs";
 const VEHICLE_TYPES = ["Bike", "Scooty", "Activa", "Car", "Other"];
@@ -230,3 +212,5 @@ function VehiclesPage() {
     </div>
   );
 }
+
+export default VehiclesPage;

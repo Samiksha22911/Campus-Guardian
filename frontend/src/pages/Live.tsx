@@ -1,9 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+
 import { useRef, useState } from "react";
 import camVehicle from "@/assets/cam-vehicle.jpg";
 import { PageHeader } from "@/components/app/AppShell";
 import { Card, LiveFeedFrame } from "@/components/app/shared";
-import { CurrentVerification } from "./_app.dashboard";
+import { CurrentVerification } from "./Dashboard";
 import { useApp } from "@/lib/app-store";
 import { GATES } from "@/lib/campus-data";
 import { Button } from "@/components/ui/button";
@@ -19,24 +19,6 @@ const SCENARIOS = [
   { value: "face_mismatch", label: "Test: face mismatch" },
   { value: "no_face", label: "Test: no face detected" },
 ];
-
-export const Route = createFileRoute("/_app/live")({
-  head: () => ({
-    meta: [
-      { title: "Live Gate Monitoring — Campus Gate AI" },
-      {
-        name: "description",
-        content:
-          "Real-time gate camera with plate bounding boxes, detection pipeline stepper, verification results and manual override controls for guards.",
-      },
-      { property: "og:title", content: "Live Gate Monitoring — Campus Gate AI" },
-      { property: "og:description", content: "Guard console for live ANPR and face verification at campus gates." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: LivePage,
-});
 
 const STEPS = ["Plate Detected", "OCR Read", "DB Lookup", "Face Check", "Decision"];
 
@@ -197,3 +179,5 @@ function LivePage() {
     </div>
   );
 }
+
+export default LivePage;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Activity,
   BarChart3,
@@ -110,9 +110,7 @@ export function AppShell({ children }) {
 
   const navigate = useNavigate();
 
-  const pathname = useRouterState({
-    select: (state) => state.location.pathname,
-  });
+  const { pathname } = useLocation();
 
   const [collapsed, setCollapsed] = useState(false);
   const [drawer, setDrawer] = useState(false);
@@ -166,7 +164,7 @@ export function AppShell({ children }) {
 
   const handleLogout = () => {
     logout();
-    navigate({ to: "/login" });
+    navigate("/login");
   };
 
   return (
@@ -269,7 +267,7 @@ export function AppShell({ children }) {
                 <DropdownMenuItem
                   key={alert.id}
                   onClick={() =>
-                    navigate({ to: "/alerts" })
+                    navigate("/alerts")
                   }
                 >
                   <div className="flex w-full flex-col gap-0.5">
@@ -321,7 +319,7 @@ export function AppShell({ children }) {
 
               <DropdownMenuSeparator />
 
-              <DropdownMenuItem onClick={() => navigate({ to: "/profile" })}>
+              <DropdownMenuItem onClick={() => navigate("/profile")}>
                 <UserCircle className="mr-2 size-4" />
                 My profile
               </DropdownMenuItem>

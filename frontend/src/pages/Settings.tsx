@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/app/AppShell";
 import { Badge2, Card, Field, RoleGate } from "@/components/app/shared";
@@ -9,24 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-
-export const Route = createFileRoute("/_app/settings")({
-  head: () => ({
-    meta: [
-      { title: "System Settings — Campus Gate AI" },
-      {
-        name: "description",
-        content:
-          "Tune recognition thresholds, camera assignments, alert routing, data retention and operator accounts for the campus security system.",
-      },
-      { property: "og:title", content: "System Settings — Campus Gate AI" },
-      { property: "og:description", content: "Configure AI thresholds, cameras, alerts and operator roles." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: SettingsPage,
-});
 
 function SettingsPage() {
   const { thresholds, setThresholds, aiOnline, setAiOnline, user, users, loadUsers, createUser } = useApp();
@@ -200,3 +182,5 @@ function SettingsPage() {
     </div>
   );
 }
+
+export default SettingsPage;

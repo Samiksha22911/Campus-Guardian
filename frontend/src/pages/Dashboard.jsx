@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 
 import camVehicle from "@/assets/cam-vehicle.jpg";
 
@@ -17,38 +17,6 @@ import {
 import { useApp } from "@/lib/app-store";
 import { fmtTime, studentById, vehicles } from "@/lib/campus-data";
 import { cn } from "@/lib/utils";
-
-export const Route = createFileRoute("/_app/dashboard")({
-  head: () => ({
-    meta: [
-      { title: "Security Dashboard — Campus Guardian AI" },
-      {
-        name: "description",
-        content:
-          "Glanceable campus security dashboard: today's verified entries, unknown vehicles, mismatches and the live verification result at the gate.",
-      },
-      {
-        property: "og:title",
-        content: "Security Dashboard — Campus Guardian AI",
-      },
-      {
-        property: "og:description",
-        content:
-          "Live entry verification stats, alerts and recent gate activity.",
-      },
-      {
-        property: "og:type",
-        content: "website",
-      },
-      {
-        name: "twitter:card",
-        content: "summary_large_image",
-      },
-    ],
-  }),
-
-  component: DashboardPage,
-});
 
 const spark = (seed) =>
   Array.from(
@@ -380,3 +348,5 @@ function DashboardPage() {
     </div>
   );
 }
+
+export default DashboardPage;

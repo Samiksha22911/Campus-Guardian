@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PageHeader } from "@/components/app/AppShell";
 import {
@@ -16,24 +16,6 @@ import { fmtDateTime, vehiclesForStudent, type Student } from "@/lib/campus-data
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-
-export const Route = createFileRoute("/_app/students")({
-  head: () => ({
-    meta: [
-      { title: "Student Management — Campus Gate AI" },
-      {
-        name: "description",
-        content:
-          "Search, filter and manage student records: enrollment status, linked vehicles, face enrollment and consent for campus entry verification.",
-      },
-      { property: "og:title", content: "Student Management — Campus Gate AI" },
-      { property: "og:description", content: "Student registry with linked vehicles and face enrollment status." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: StudentsPage,
-});
 
 const sel = "rounded-md border border-border bg-surface-2 px-2 py-1 font-mono text-xs";
 
@@ -426,3 +408,5 @@ function StudentsPage() {
     </div>
   );
 }
+
+export default StudentsPage;

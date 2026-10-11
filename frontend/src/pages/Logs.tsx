@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+
 import { useMemo, useState } from "react";
 import camVehicle from "@/assets/cam-vehicle.jpg";
 import { PageHeader } from "@/components/app/AppShell";
@@ -17,24 +17,6 @@ import { useApp } from "@/lib/app-store";
 import { GATES, fmtDate, fmtDateTime, fmtTime, studentById, type EntryLog } from "@/lib/campus-data";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-
-export const Route = createFileRoute("/_app/logs")({
-  head: () => ({
-    meta: [
-      { title: "Entry Logs — Campus Gate AI" },
-      {
-        name: "description",
-        content:
-          "Searchable audit trail of every campus gate entry: plate, student, face match result, confidence scores and captured frame.",
-      },
-      { property: "og:title", content: "Entry Logs — Campus Gate AI" },
-      { property: "og:description", content: "Full campus entry audit trail with filters and CSV export." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: LogsPage,
-});
 
 const sel = "rounded-md border border-border bg-surface-2 px-2 py-1 font-mono text-xs";
 
@@ -177,3 +159,5 @@ function LogsPage() {
     </div>
   );
 }
+
+export default LogsPage;

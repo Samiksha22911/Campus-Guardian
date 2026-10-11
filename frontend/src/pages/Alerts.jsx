@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+
 import { useMemo, useState } from "react";
 import camPerimeter from "@/assets/cam-perimeter.jpg";
 import { PageHeader } from "@/components/app/AppShell";
@@ -8,40 +8,6 @@ import { fmtDateTime, studentById } from "@/lib/campus-data";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-export const Route = createFileRoute("/_app/alerts")({
-  head: () => ({
-    meta: [
-      {
-        title: "Alerts — Campus Guardian AI",
-      },
-      {
-        name: "description",
-        content:
-          "Triage campus security alerts by severity and status: blocklisted vehicles, face mismatches, intrusion and loitering events.",
-      },
-      {
-        property: "og:title",
-        content: "Alerts — Campus Guardian AI",
-      },
-      {
-        property: "og:description",
-        content:
-          "Acknowledge, resolve and escalate live campus security alerts.",
-      },
-      {
-        property: "og:type",
-        content: "website",
-      },
-      {
-        name: "twitter:card",
-        content: "summary_large_image",
-      },
-    ],
-  }),
-
-  component: AlertsPage,
-});
 
 const sel =
   "rounded-md border border-border bg-surface-2 px-2 py-1 font-mono text-xs";
@@ -221,3 +187,4 @@ function AlertsPage() {
   );
 }
 
+export default AlertsPage;

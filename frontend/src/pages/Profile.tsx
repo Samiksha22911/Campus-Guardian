@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+
 import { useState } from "react";
 import { PageHeader } from "@/components/app/AppShell";
 import { Badge2, Card, Field } from "@/components/app/shared";
@@ -8,23 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { UserCircle } from "lucide-react";
-
-export const Route = createFileRoute("/_app/profile")({
-  head: () => ({
-    meta: [
-      { title: "My Profile — Campus Gate AI" },
-      {
-        name: "description",
-        content: "View your account details and update your name or password.",
-      },
-      { property: "og:title", content: "My Profile — Campus Gate AI" },
-      { property: "og:description", content: "Manage your Campus Gate AI operator account." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: ProfilePage,
-});
 
 function ProfilePage() {
   const { user, updateProfile } = useApp();
@@ -158,3 +141,5 @@ function ProfilePage() {
     </div>
   );
 }
+
+export default ProfilePage;

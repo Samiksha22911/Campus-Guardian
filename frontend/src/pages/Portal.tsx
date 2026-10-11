@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,13 +7,6 @@ import { Badge2, statusTone } from "@/components/app/shared";
 import { ShieldCheck, LogOut } from "lucide-react";
 import { ThemeToggleButton } from "@/components/app/ThemeToggleButton";
 import { api, getStudentToken, setStudentToken } from "@/lib/api-client";
-
-export const Route = createFileRoute("/portal")({
-  head: () => ({
-    meta: [{ title: "Student portal — Campus Gate AI" }],
-  }),
-  component: StudentPortalPage,
-});
 
 const STATUS_LABEL = {
   active: "Approved — you can enter through the AI gate",
@@ -184,3 +177,5 @@ function StudentPortalPage() {
     </div>
   );
 }
+
+export default StudentPortalPage;
