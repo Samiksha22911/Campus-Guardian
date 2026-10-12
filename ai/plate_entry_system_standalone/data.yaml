@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['license_plate']
+
+roboflow:
+  workspace: smart-work-lmsb8
+  project: plate-number-6krm0-ppf5o
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/smart-work-lmsb8/plate-number-6krm0-ppf5o/dataset/1

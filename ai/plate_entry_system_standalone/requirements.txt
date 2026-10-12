@@ -1,0 +1,7 @@
+ultralytics>=8.3.0        # YOLOv11 training + inference
+easyocr>=1.7.1            # OCR engine for reading plate text
+opencv-python>=4.9.0
+numpy>=1.26.0
+pandas>=2.2.0
+streamlit>=1.35.0         # simple web dashboard for the gate system
+pillow>=10.0.0
