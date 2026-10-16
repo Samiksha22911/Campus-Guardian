@@ -95,6 +95,35 @@ class Settings:
     ]
 
 
+    # ------------------------------------------------------------
+    # Cloud database (Aiven MySQL requires SSL)
+    # ------------------------------------------------------------
+    # Path to the CA certificate downloaded from the Aiven console
+    # (e.g. certs/aiven-ca.pem). Empty = encrypted but unverified connection.
+    DB_SSL_CA: str = os.getenv("DB_SSL_CA", "").strip()
+
+    # ------------------------------------------------------------
+    # Google sign-in (Google Identity Services / OpenID Connect ID token)
+    # ------------------------------------------------------------
+    GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "").strip()
+    # false (default): only emails that already exist in the users table can
+    # sign in with Google. true: unknown Google accounts are auto-created as
+    # security_officer (handy for a demo, risky for production).
+    GOOGLE_AUTO_CREATE: bool = _bool(os.getenv("GOOGLE_AUTO_CREATE"), False)
+    # Comma separated emails that become admin when auto-created.
+    GOOGLE_ADMIN_EMAILS: list[str] = [
+        e.strip().lower()
+        for e in os.getenv("GOOGLE_ADMIN_EMAILS", "").split(",")
+        if e.strip()
+    ]
+
+    # ------------------------------------------------------------
+    # Looping demo video: ignore the same plate at the same gate for N
+    # seconds so one car does not create dozens of entry logs / alerts.
+    # ------------------------------------------------------------
+    DEDUPE_WINDOW_SECONDS: int = int(os.getenv("DEDUPE_WINDOW_SECONDS", "45"))
+
+
 settings = Settings()
 
 

@@ -99,6 +99,7 @@ export const api = {
   // -------- auth --------
   login: (email, password) => request("/api/auth/login", { method: "POST", body: { email, password }, auth: false }),
   logout: () => request("/api/auth/logout", { method: "POST" }),
+  googleLogin: (credential) => request("/api/auth/google", { method: "POST", body: { credential }, auth: false }),
   me: () => request("/api/auth/me"),
 
   // -------- students --------
@@ -139,12 +140,13 @@ export const api = {
   },
 
   // -------- verification --------
-  processVerification: (file, { gateId, requireFace, scenario } = {}) => {
+  processVerification: (file, { gateId, requireFace, scenario, live } = {}) => {
     const form = new FormData();
     form.append("image", file);
     form.append("gate_id", String(gateId));
     if (requireFace !== undefined) form.append("require_face", String(requireFace));
     if (scenario) form.append("scenario", scenario);
+    if (live) form.append("live", "true");
     return request("/api/verification/process", { method: "POST", body: form, isForm: true });
   },
   getVerificationHistory: (limit = 100) => request(`/api/verification/history/list?limit=${limit}`),

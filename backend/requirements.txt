@@ -16,3 +16,7 @@ python-jose[cryptography]
 # "headless" = OpenCV without GUI libs, so it installs cleanly on servers/Docker.
 numpy>=1.26.0
 opencv-python-headless>=4.9.0
+
+# Google sign-in: verifies the ID token sent by the frontend
+google-auth>=2.29.0
+requests

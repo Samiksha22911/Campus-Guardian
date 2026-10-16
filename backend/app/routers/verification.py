@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
@@ -25,6 +27,7 @@ def process_verification(
     gate_id: int = Form(...),
     require_face: bool = Form(default=None),
     scenario: str | None = Form(default=None),
+    live: bool = Form(default=False),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
@@ -54,6 +57,17 @@ def process_verification(
     known_plates = [v.registration_number for v in db.query(Vehicle.registration_number).all()]
 
     pipeline_result = run_pipeline(image_bytes, known_plates=known_plates, scenario=scenario)
+
+    # Looping-video mode: frames with no plate in them (empty road) are
+    # skipped silently - they must not create entry logs or alerts.
+    if live and not pipeline_result["plate_detected"]:
+        return VerificationResult(
+            entry_id=0, vehicle_detected=False, vehicle_type=None, plate_detected=False,
+            plate_number=None, ocr_confidence=0.0, vehicle_registered=False,
+            student_id=None, student_name=None, face_detected=False, face_match=None,
+            face_similarity=0.0, verification_status="NO_PLATE", status="uncertain",
+            rejection_reason=None, captured_image=None,
+        )
 
     plate_number = pipeline_result["plate_number"]
     normalized_plate = normalize_plate(plate_number) if plate_number else None
@@ -104,6 +118,40 @@ def process_verification(
 
     if plate_match_type == "fuzzy" and verification_status == "GRANTED":
         rejection_reason = f"Note: matched via fuzzy plate correction (raw OCR read: {plate_number})."
+
+    # Duplicate suppression (looping video): same plate, same gate, within the
+    # window -> return the earlier result instead of logging it again.
+    if live and settings.DEDUPE_WINDOW_SECONDS > 0:
+        cutoff = datetime.utcnow() - timedelta(seconds=settings.DEDUPE_WINDOW_SECONDS)
+        recent = (
+            db.query(EntryLog)
+            .filter(
+                EntryLog.gate_id == gate.id,
+                EntryLog.detected_plate == plate_number,
+                EntryLog.decision_source == "ai",
+                EntryLog.entry_time >= cutoff,
+            )
+            .order_by(EntryLog.entry_time.desc())
+            .first()
+        )
+        if recent:
+            return VerificationResult(
+                entry_id=recent.id,
+                vehicle_detected=pipeline_result["plate_detected"],
+                vehicle_type=recent.detected_vehicle_type,
+                plate_detected=pipeline_result["plate_detected"],
+                plate_number=plate_number,
+                ocr_confidence=pipeline_result["ocr_confidence"],
+                vehicle_registered=recent.verification_status == "GRANTED",
+                student_id=recent.student_id,
+                student_name=recent.student.name if recent.student else None,
+                face_detected=False, face_match=None, face_similarity=0.0,
+                verification_status=recent.verification_status,
+                status=recent.status,
+                rejection_reason=recent.rejection_reason,
+                captured_image=recent.captured_image,
+                duplicate=True,
+            )
 
     captured_image_url = None
     try:

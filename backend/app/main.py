@@ -112,6 +112,32 @@ app.include_router(audit.router)
 
 
 # =========================================================
+# MODEL WARM-UP (real AI only) - load YOLO + EasyOCR in the background at boot
+# so the first request is not slow enough to hit a gateway timeout.
+# =========================================================
+
+@app.on_event("startup")
+def _warm_models():
+    if settings.MOCK_AI:
+        return
+
+    import threading
+
+    def _load():
+        try:
+            from .ai.ocr_service import _get_reader
+            from .ai.plate_detector import _load_model
+
+            _load_model()
+            _get_reader()
+            logger.info("AI models warmed up")
+        except Exception:
+            logger.exception("AI model warm-up failed")
+
+    threading.Thread(target=_load, daemon=True).start()
+
+
+# =========================================================
 # BASIC ROUTES
 # =========================================================
 

@@ -6,13 +6,21 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY requirements.txt requirements-ai.txt ./
+# System libs OpenCV / torch need at runtime.
+RUN apt-get update && apt-get install -y --no-install-recommends libglib2.0-0 libgl1 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt requirements-ai-plate.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Real AI models are large (multi-GB). Only install them when asked:
-#   docker build --build-arg INSTALL_AI=true -t campus-guardian-api .
-ARG INSTALL_AI=false
-RUN if [ "$INSTALL_AI" = "true" ]; then pip install --no-cache-dir -r requirements-ai.txt; fi
+# Real plate AI (YOLO + EasyOCR). Set to false to build the small mock-only image:
+#   docker build --build-arg INSTALL_AI=false .
+ARG INSTALL_AI=true
+RUN if [ "$INSTALL_AI" = "true" ]; then \
+      pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
+      pip install --no-cache-dir -r requirements-ai-plate.txt && \
+      python -c "import easyocr; easyocr.Reader(['en'], gpu=False)"; \
+    fi
 
 COPY . .
 

@@ -8,3 +8,5 @@ __pycache__/
 uploads/entries/*
 !uploads/entries/.gitkeep
 app/ai/weights/*.pt
+# ...but DO commit the plate model so Render can load it:
+!app/ai/weights/plate_best.pt

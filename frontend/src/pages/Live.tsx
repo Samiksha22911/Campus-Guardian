@@ -4,6 +4,7 @@ import camVehicle from "@/assets/cam-vehicle.jpg";
 import { PageHeader } from "@/components/app/AppShell";
 import { Card, LiveFeedFrame } from "@/components/app/shared";
 import { CurrentVerification } from "./Dashboard";
+import LoopVideoPanel from "@/components/app/LoopVideoPanel";
 import { useApp } from "@/lib/app-store";
 import { GATES } from "@/lib/campus-data";
 import { Button } from "@/components/ui/button";
@@ -75,7 +76,13 @@ function LivePage() {
 
       <div className="grid gap-3 p-3 xl:grid-cols-3">
         <Card title={`Camera — ${gate}`} className="xl:col-span-2" bodyClassName="p-3">
-          <LiveFeedFrame src={camVehicle} label={gate} plate={current?.plate} confidence={current?.plateConfidence} />
+          <LoopVideoPanel
+            gate={gate}
+            current={current}
+            aiOnline={aiOnline}
+            runVerification={runVerification}
+            fallback={<LiveFeedFrame src={camVehicle} label={gate} plate={current?.plate} confidence={current?.plateConfidence} />}
+          />
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
             {STEPS.map((s, i) => (
               <div key={s} className="flex items-center gap-1.5">

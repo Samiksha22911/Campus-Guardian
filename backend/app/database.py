@@ -9,9 +9,17 @@ if settings.DATABASE_URL.startswith("sqlite"):
     # different threads (each request may be handled by a different thread).
     _connect_args = {"check_same_thread": False}
 
+elif settings.DATABASE_URL.startswith("mysql"):
+    # Aiven (and most cloud MySQL) only accepts TLS connections.
+    if settings.DB_SSL_CA:
+        _connect_args = {"ssl": {"ca": settings.DB_SSL_CA}}
+    else:
+        _connect_args = {"ssl": {"check_hostname": False}}
+
 engine = create_engine(
     settings.DATABASE_URL,
     pool_pre_ping=True,
+    pool_recycle=280,  # cloud MySQL closes idle connections
     echo=False,
     connect_args=_connect_args,
 )

@@ -12,6 +12,10 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class GoogleLoginRequest(BaseModel):
+    credential: str  # the Google ID token (JWT) from Google Identity Services
+
+
 class UserResponse(BaseModel):
     id: int
     name: str
@@ -181,6 +185,7 @@ class VerificationResult(BaseModel):
     status: str
     rejection_reason: str | None
     captured_image: str | None
+    duplicate: bool = False
 
 
 class EntryResponse(BaseModel):

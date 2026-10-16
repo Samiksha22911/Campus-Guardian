@@ -207,6 +207,21 @@ export function AppProvider({ children }) {
     }
   }, []);
 
+  const loginWithGoogle = useCallback(async (credential) => {
+    try {
+      const res = await api.googleLogin(credential);
+      setToken(res.access_token);
+      setUser({
+        ...res.user,
+        role: ROLE_FROM_BACKEND[res.user.role] ?? res.user.role,
+        backendRole: res.user.role,
+      });
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: err.message || "Google sign-in failed." };
+    }
+  }, []);
+
   const logout = useCallback(() => {
     api.logout().catch(() => {});
     setToken(null);
@@ -229,6 +244,18 @@ export function AppProvider({ children }) {
 
       try {
         const result = await api.processVerification(file, { gateId, ...options });
+
+        // Looping-video mode: nothing new to show for empty frames or for a
+        // plate that was already logged a moment ago.
+        if (options.live && result.verification_status === "NO_PLATE") {
+          setStep(-1);
+          return { ok: true, skipped: true, result };
+        }
+        if (options.live && result.duplicate) {
+          setStep(5);
+          return { ok: true, skipped: true, result };
+        }
+
         setStep(5);
 
         // Pull the freshly created entry from the entries endpoint so it
@@ -390,6 +417,7 @@ export function AppProvider({ children }) {
     loadingData,
 
     login,
+    loginWithGoogle,
     logout,
     refreshAll,
 

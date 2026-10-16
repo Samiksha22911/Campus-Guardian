@@ -1,0 +1,4 @@
+# Lightweight real-AI set for the plate demo (no face model).
+# torch/torchvision (CPU) are installed first by the Dockerfile.
+ultralytics>=8.3.0
+easyocr>=1.7.1

@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ShieldCheck } from "lucide-react";
 import { ThemeToggleButton } from "@/components/app/ThemeToggleButton";
+import GoogleSignInButton from "@/components/app/GoogleSignInButton";
 
 function LoginPage() {
-  const { login, user, hydrated } = useApp();
+  const { login, loginWithGoogle, user, hydrated } = useApp();
   const navigate = useNavigate();
   const [email, setEmail] = useState("guard1@campus.edu");
   const [password, setPassword] = useState("Guard@123");
@@ -78,6 +79,16 @@ function LoginPage() {
             {submitting ? "Signing in…" : "Sign in"}
           </Button>
         </form>
+
+        <GoogleSignInButton
+          onCredential={async (credential: string) => {
+            setError("");
+            const res = await loginWithGoogle(credential);
+            if (!res.ok) setError(res.error ?? "Google sign-in failed");
+            else navigate("/dashboard");
+          }}
+          onError={(msg: string) => setError(msg)}
+        />
 
         {/* <div className="mt-6 space-y-1 border-t border-border pt-4 font-mono text-[0.65rem] text-muted-foreground">
           <p>Demo accounts (seeded by backend/app/seed.py):</p>
