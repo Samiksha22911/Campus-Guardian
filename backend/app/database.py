@@ -16,8 +16,12 @@ elif settings.DATABASE_URL.startswith("mysql"):
     else:
         _connect_args = {"ssl": {"check_hostname": False}}
 
+db_url = settings.DATABASE_URL
+if db_url.startswith("mysql://"):
+    db_url = db_url.replace("mysql://", "mysql+pymysql://", 1)
+
 engine = create_engine(
-    settings.DATABASE_URL,
+    db_url,
     pool_pre_ping=True,
     pool_recycle=280,  # cloud MySQL closes idle connections
     echo=False,
