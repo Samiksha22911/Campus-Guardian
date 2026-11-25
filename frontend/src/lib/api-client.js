@@ -95,7 +95,24 @@ async function request(path, { method = "GET", body, isForm = false, auth = true
   return data;
 }
 
+/** Videos uploaded in local mode are served by the backend; the demo video is a static file on the frontend host. */
+export function mediaUrl(src) {
+  if (!src) return null;
+  if (/^https?:/.test(src)) return src;
+  return src.startsWith("/uploads/") ? `${API_URL}${src}` : src;
+}
+
 export const api = {
+  // -------- demo mode / video analysis --------
+  getConfig: () => request("/api/config", { auth: false }),
+  getDemoResults: () => request("/api/demo/results"),
+  uploadAnalysis: (file) => {
+    const form = new FormData();
+    form.append("video", file);
+    return request("/api/analysis/upload", { method: "POST", body: form, isForm: true });
+  },
+  getAnalysis: (jobId) => request(`/api/analysis/${jobId}`),
+
   // -------- auth --------
   login: (email, password) => request("/api/auth/login", { method: "POST", body: { email, password }, auth: false }),
   logout: () => request("/api/auth/logout", { method: "POST" }),

@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+*.db
+__pycache__/
+.venv/
+venv/
+backend/uploads/videos/*
+backend/uploads/results/*
+# model weights ARE committed (small): ai-service/weights/plate_best.pt

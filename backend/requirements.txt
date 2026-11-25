@@ -1,5 +1,6 @@
-# Core API + the lightweight image libraries the app imports at startup.
-# This is everything you need to run with MOCK_AI=true (the default).
+# LIGHTWEIGHT backend (DEMO_MODE=true) - what Render installs.
+# No torch / ultralytics / easyocr / opencv here. Heavy AI deps live ONLY in
+# ../ai-service/requirements.txt (needed only for local DEMO_MODE=false).
 fastapi
 uvicorn[standard]
 sqlalchemy
@@ -11,12 +12,6 @@ python-multipart
 passlib[bcrypt]
 bcrypt==4.0.1
 python-jose[cryptography]
-
-# The AI modules import these at module level even in mock mode.
-# "headless" = OpenCV without GUI libs, so it installs cleanly on servers/Docker.
-numpy>=1.26.0
-opencv-python-headless>=4.9.0
-
-# Google sign-in: verifies the ID token sent by the frontend
 google-auth>=2.29.0
 requests
+numpy>=1.26.0

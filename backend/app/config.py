@@ -43,7 +43,28 @@ class Settings:
         if origin.strip()
     ]
 
-    # AI pipeline
+    # ------------------------------------------------------------
+    # DEMO_MODE
+    #   true  -> hosted demo: login/DB/dashboard are real, the AI is NOT run;
+    #            the app replays demo-data/results.json (precomputed locally
+    #            with the real pipeline). Heavy libs are never imported.
+    #   false -> full local project: upload ANY video, the real pipeline
+    #            (ai-service/) runs and produces results in the same format.
+    # ------------------------------------------------------------
+    DEMO_MODE: bool = _bool(os.getenv("DEMO_MODE"), True)
+    # Repo-root/demo-data by default (works locally and on Render when the
+    # service root is the repo root).
+    DEMO_DATA_DIR: str = os.getenv(
+        "DEMO_DATA_DIR",
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "demo-data"),
+    )
+    AI_SERVICE_DIR: str = os.getenv(
+        "AI_SERVICE_DIR",
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "ai-service"),
+    )
+    MAX_VIDEO_MB: int = int(os.getenv("MAX_VIDEO_MB", "200"))
+
+    # AI pipeline (old per-frame /api/verification endpoint, local only)
     # When true (default) the AI pipeline uses deterministic/mock logic so the
     # rest of the application can be built and tested before the real
     # YOLO / OCR / OpenCV / face-verification models are wired in.
@@ -79,8 +100,8 @@ class Settings:
     # run `python run.py` from). Train these with the scripts in the
     # project-root ai/ folder (train_plate_yolo.py, train_face_yolo.py) and
     # copy the resulting best.pt files here.
-    PLATE_MODEL_PATH: str = os.getenv("PLATE_MODEL_PATH", "app/ai/weights/plate_best.pt")
-    FACE_MODEL_PATH: str = os.getenv("FACE_MODEL_PATH", "app/ai/weights/face_best.pt")
+    PLATE_MODEL_PATH: str = os.getenv("PLATE_MODEL_PATH", os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "ai-service", "weights", "plate_best.pt"))
+    FACE_MODEL_PATH: str = os.getenv("FACE_MODEL_PATH", os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "ai-service", "weights", "face_best.pt"))
 
     # "cpu" or a CUDA device index as a string, e.g. "0"
     AI_DEVICE: str = os.getenv("AI_DEVICE", "cpu")

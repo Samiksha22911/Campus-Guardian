@@ -90,11 +90,13 @@ function LoginPage() {
           onError={(msg: string) => setError(msg)}
         />
 
-        {/* <div className="mt-6 space-y-1 border-t border-border pt-4 font-mono text-[0.65rem] text-muted-foreground">
-          <p>Demo accounts (seeded by backend/app/seed.py):</p>
-          <p>admin@campus.edu / Admin@123</p>
-          <p>guard1@campus.edu / Guard@123</p>
-        </div> */}
+        {import.meta.env.VITE_DEMO_MODE === "true" ? (
+          <div className="mt-6 space-y-1 border-t border-border pt-4 font-mono text-[0.65rem] text-muted-foreground">
+            <p>Live demo — recruiter login (read-mostly):</p>
+            <p>recruiter@campus.edu / Demo@123</p>
+            <p className="pt-1">Then open “Video Analysis” in the sidebar.</p>
+          </div>
+        ) : null}
 
         <div className="mt-4 flex items-center justify-between gap-4 border-t border-border pt-4 text-xs text-muted-foreground">
           <Link to="/register" className="underline underline-offset-2">

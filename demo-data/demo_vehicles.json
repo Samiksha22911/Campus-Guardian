@@ -1,0 +1,16 @@
+[
+  {
+    "plate": "MP07SA1908",
+    "owner": "Demo Owner One",
+    "vehicle_type": "Activa",
+    "status": "active",
+    "blocklisted": false
+  },
+  {
+    "plate": "MP07ME0643",
+    "owner": "Demo Owner Two",
+    "vehicle_type": "Bike",
+    "status": "active",
+    "blocklisted": true
+  }
+]

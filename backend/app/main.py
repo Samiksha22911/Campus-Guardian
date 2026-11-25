@@ -23,8 +23,8 @@ from .routers import (
     students,
     users,
     vehicles,
-    verification,
 )
+from .routers import demo as demo_router
 
 # Import models so SQLAlchemy knows about all tables.
 from . import models  # noqa: F401
@@ -100,7 +100,6 @@ app.include_router(auth.router)
 app.include_router(student_portal.router)
 app.include_router(students.router)
 app.include_router(vehicles.router)
-app.include_router(verification.router)
 app.include_router(entries.router)
 app.include_router(gates.router)
 app.include_router(alerts.router)
@@ -109,6 +108,17 @@ app.include_router(dashboard.router)
 app.include_router(reports.router)
 app.include_router(users.router)
 app.include_router(audit.router)
+app.include_router(demo_router.router)
+
+# ---------------------------------------------------------------------
+# DEMO_MODE switch. Everything that needs OpenCV / torch / YOLO / EasyOCR is
+# imported ONLY when DEMO_MODE=false, so the hosted demo needs none of them.
+# ---------------------------------------------------------------------
+if not settings.DEMO_MODE:
+    from .routers import analysis, verification
+
+    app.include_router(verification.router)
+    app.include_router(analysis.router)
 
 
 # =========================================================
@@ -118,7 +128,7 @@ app.include_router(audit.router)
 
 @app.on_event("startup")
 def _warm_models():
-    if settings.MOCK_AI:
+    if settings.DEMO_MODE or settings.MOCK_AI:
         return
 
     import threading
@@ -138,12 +148,29 @@ def _warm_models():
 
 
 # =========================================================
+# DEMO_MODE: a fresh cloud database has no users, so seed it once at boot.
+# (seed_database() only inserts what is missing, so restarts are safe.)
+# =========================================================
+
+@app.on_event("startup")
+def _seed_demo_db():
+    if not settings.DEMO_MODE:
+        return
+    try:
+        from .seed import seed_database
+
+        seed_database()
+    except Exception:
+        logger.exception("Demo seeding failed")
+
+
+# =========================================================
 # BASIC ROUTES
 # =========================================================
 
 @app.get("/")
 def root():
-    return {"message": "Campus Guardian API is running", "mock_ai": settings.MOCK_AI}
+    return {"message": "Campus Guardian API is running", "demo_mode": settings.DEMO_MODE}
 
 
 @app.get("/health")

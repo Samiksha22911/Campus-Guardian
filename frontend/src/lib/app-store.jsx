@@ -483,6 +483,7 @@ export const can = (role, page) => {
   const matrix = {
     dashboard: ["guard", "admin"],
     live: ["guard", "admin"],
+    analysis: ["guard", "admin"],
     students: ["guard", "admin"],
     vehicles: ["guard", "admin"],
     enrollment: ["admin"],

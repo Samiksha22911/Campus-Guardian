@@ -1,0 +1,10 @@
+# HEAVY dependencies - only needed to RUN the real pipeline (local, DEMO_MODE=false,
+# or to generate demo-data/results.json). Never installed on Render/Vercel.
+#
+# Install the lightweight backend first:  pip install -r ../backend/requirements.txt
+# Tip (no GPU): install CPU torch first to keep it small:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+ultralytics>=8.3.0
+easyocr>=1.7.1
+opencv-python-headless>=4.9.0
+numpy>=1.26.0

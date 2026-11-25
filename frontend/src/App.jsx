@@ -10,6 +10,7 @@ const Register = lazy(() => import("@/pages/Register"));
 const Portal = lazy(() => import("@/pages/Portal"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Live = lazy(() => import("@/pages/Live"));
+const Analysis = lazy(() => import("@/pages/Analysis"));
 const Students = lazy(() => import("@/pages/Students"));
 const Vehicles = lazy(() => import("@/pages/Vehicles"));
 const Enrollment = lazy(() => import("@/pages/Enrollment"));
@@ -51,6 +52,7 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<Page title="Security Dashboard — Campus Guardian AI"><Dashboard /></Page>} />
           <Route path="/live" element={<Page title="Live Gate Monitoring — Campus Gate AI"><Live /></Page>} />
+          <Route path="/analysis" element={<Page title="Video Analysis — Campus Guardian AI"><Analysis /></Page>} />
           <Route path="/students" element={<Page title="Student Management — Campus Gate AI"><Students /></Page>} />
           <Route path="/vehicles" element={<Page title="Vehicle Management — Campus Gate AI"><Vehicles /></Page>} />
           <Route path="/enrollment" element={<Page title="Enrollment Wizard — Campus Guardian AI"><Enrollment /></Page>} />

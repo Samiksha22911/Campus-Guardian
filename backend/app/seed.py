@@ -37,6 +37,7 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
+from .config import settings
 from .database import Base, SessionLocal, engine
 from .models import Alert, EntryLog, Gate, Student, User, Vehicle
 from .security import hash_password
@@ -57,6 +58,39 @@ DEMO_STUDENTS = [
 BLOCK_REASON = "Reported for repeated unauthorized parking in the faculty zone"
 
 
+def _seed_demo_vehicles(db):
+    """Registers the plates listed in demo-data/demo_vehicles.json (the plates that
+    appear in YOUR demo video). Plates not listed stay unregistered -> DENIED."""
+    import json
+    import os
+
+    path = os.path.join(settings.DEMO_DATA_DIR, "demo_vehicles.json")
+    if not os.path.exists(path):
+        return
+    with open(path, encoding="utf-8") as f:
+        items = json.load(f)
+    for i, it in enumerate(items, 1):
+        plate = normalize_plate(it["plate"])
+        if db.query(Vehicle).filter(Vehicle.registration_number == plate).first():
+            continue
+        sid = f"DEMO{i:03d}"
+        student = db.query(Student).filter(Student.student_id == sid).first()
+        if not student:
+            student = Student(
+                student_id=sid, name=it.get("owner", f"Demo Owner {i}"), email=f"{sid.lower()}@campus.edu",
+                department="Demo", course="B.Tech", year=2, biometric_consent=True, status="active",
+            )
+            db.add(student)
+            db.commit()
+            db.refresh(student)
+        db.add(Vehicle(
+            registration_number=plate, vehicle_type=it.get("vehicle_type", "Car"), owner_student_id=student.id,
+            status=it.get("status", "active"), is_blocklisted=bool(it.get("blocklisted")),
+            block_reason=BLOCK_REASON if it.get("blocklisted") else None,
+        ))
+    db.commit()
+
+
 def seed_database():
     Base.metadata.create_all(bind=engine)
 
@@ -70,6 +104,7 @@ def seed_database():
         users = [
             {"name": "Campus Admin", "email": "admin@campus.edu", "password": "Admin@123", "role": "admin"},
             {"name": "Security Officer - Priya", "email": "guard1@campus.edu", "password": "Guard@123", "role": "security_officer"},
+            {"name": "Recruiter Demo", "email": "recruiter@campus.edu", "password": "Demo@123", "role": "security_officer"},
             {"name": "Security Officer - Aman", "email": "guard2@campus.edu", "password": "Guard@123", "role": "security_officer"},
         ]
 
@@ -347,6 +382,8 @@ def seed_database():
                 detail=entry_unknown.rejection_reason,
             ))
             db.commit()
+
+        _seed_demo_vehicles(db)
 
         print("Database seeded successfully.")
         print(f"  {len(DEMO_STUDENTS)} students / vehicles covering every decision-matrix outcome.")

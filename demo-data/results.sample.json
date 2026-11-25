@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "generated_by": "sample",
+    "generated_at": "2026-11-25T11:04:04+00:00",
+    "source_video": "SAMPLE (format example only)",
+    "models": {
+      "plate_detector": null,
+      "ocr": null,
+      "face": null
+    },
+    "stride_s": null,
+    "note": "FORMAT EXAMPLE ONLY - not produced by the real pipeline. Replace by running ai-service/analyze_video.py on your video."
+  },
+  "video": {
+    "src": "/demo.mp4",
+    "duration_s": 6.06,
+    "fps": 29.86,
+    "width": 848,
+    "height": 478
+  },
+  "events": [
+    {
+      "id": 1,
+      "timestamp": 1.4,
+      "ts_start": 0.8,
+      "ts_end": 2.2,
+      "plate_text": "MP07SA1908",
+      "plate_confidence": 0.93,
+      "detector_confidence": 0.91,
+      "face_match_name": null,
+      "face_score": null,
+      "db_status": "REGISTERED",
+      "decision": "ALLOWED",
+      "owner_name": "Aditi Sharma",
+      "bbox": {
+        "x": 0.52,
+        "y": 0.55,
+        "w": 0.15,
+        "h": 0.07
+      },
+      "track": [
+    {
+        "t": 2.8,
+        "x": 0.35,
+        "y": 0.53,
+        "w": 0.19,
+        "h": 0.19
+    },
+    {
+        "t": 3.3,
+        "x": 0.354,
+        "y": 0.542,
+        "w": 0.189,
+        "h": 0.194
+    },
+    {
+        "t": 3.9,
+        "x": 0.36,
+        "y": 0.54,
+        "w": 0.19,
+        "h": 0.20
+    }
+]
+    },
+    {
+      "id": 2,
+      "timestamp": 3.3,
+      "ts_start": 2.8,
+      "ts_end": 3.9,
+      "plate_text": "MP07ME0643",
+      "plate_confidence": 0.88,
+      "detector_confidence": 0.86,
+      "face_match_name": null,
+      "face_score": null,
+      "db_status": "UNREGISTERED",
+      "decision": "DENIED",
+      "owner_name": null,
+      "bbox": {
+      "x": 0.354,
+      "y": 0.542,
+      "w": 0.189,
+      "h": 0.194
+      },
+      "track": [
+    {
+        "t": 2.8,
+        "x": 0.35,
+        "y": 0.53,
+        "w": 0.19,
+        "h": 0.19
+    },
+    {
+        "t": 3.3,
+        "x": 0.354,
+        "y": 0.542,
+        "w": 0.189,
+        "h": 0.194
+    },
+    {
+        "t": 3.9,
+        "x": 0.36,
+        "y": 0.54,
+        "w": 0.19,
+        "h": 0.20
+    }
+]
+    }
+  ]
+}

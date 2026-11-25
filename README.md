@@ -1,520 +1,90 @@
-# 🛡️ Campus Guardian
+# 🛡️ Campus Guardian — AI campus vehicle-entry verification
 
-### AI-Powered Campus Entry Verification System
+YOLO plate detection → OCR → database lookup → **ALLOWED / DENIED**, with a React dashboard, role-based login and entry logs.
 
-Campus Guardian is an AI-powered smart campus security system designed to automate and secure the entry and exit process of educational institutions.
+**▶ Live demo:** `https://YOUR-APP.vercel.app` — sign in with `recruiter@campus.edu` / `Demo@123`, then open **Video Analysis**.
+*(The free backend sleeps when idle; the first login can take ~30–60 s to wake it up.)*
 
-The system uses **Computer Vision, YOLO, OCR, and database verification** to identify vehicles, detect and read vehicle number plates, and verify whether the vehicle is registered with the college.
+> **Demo mode vs full mode.** The AI pipeline (PyTorch + YOLO + EasyOCR) is too heavy for free hosting, so the hosted demo
+> replays results that I computed offline with the real pipeline on a recorded gate video. Login, database, dashboard and the
+> database check are live. To run the real pipeline on **any** video, clone the repo and use full mode (below) — same UI, same results format.
 
----
+## How it works
 
-## 🚀 Problem Statement
+| | Live demo (`DEMO_MODE=true`) | Local full project (`DEMO_MODE=false`) |
+|---|---|---|
+| Hosting | Vercel (frontend) + Render (backend) + Aiven MySQL | your machine |
+| Login / database / dashboard / entry logs | real | real |
+| Plate detection + OCR | **precomputed** → `demo-data/results.json` | **runs live** on your uploaded video |
+| Database status + decision | re-checked live against the DB | looked up live |
+| Backend installs | `backend/requirements.txt` only (no torch/YOLO/OpenCV) | + `ai-service/requirements.txt` |
 
-Traditional college gate-entry systems often depend on manual verification by security guards. This can lead to:
+Both modes produce the **same `results.json`** (`demo-data/results.schema.json`) and render it with **one component**
+(`frontend/src/components/app/ResultsPlayer.jsx`).
 
-* ⏳ Long verification time during peak hours
-* ❌ Human errors in checking vehicle details
-* 📝 Manual maintenance of entry records
-* 🚨 Difficulty identifying unauthorized vehicles
-* 🔍 Limited real-time monitoring and alerts
+## Repository layout
 
-Campus Guardian aims to replace this manual process with an intelligent and automated verification system.
-
----
-
-## 💡 Our Solution
-
-Campus Guardian provides an integrated platform that:
-
-1. 🚗 **Detects vehicles** using YOLO-based computer vision.
-2. 🔎 **Detects vehicle number plates** from captured images/video.
-3. 🔤 **Extracts number plates using OCR**.
-4. 🗄️ **Verifies vehicle details** against the college database.
-5. 🚨 **Generates alerts** for unauthorized or blocked vehicles.
-6. 📊 **Maintains entry logs and verification history** for security monitoring.
-
----
-
-## ✨ Key Features
-
-### 🚗 Vehicle Detection
-
-Detects different vehicle types such as:
-
-* Car
-* Bike
-* Scooty
-* Activa
-
-The detection pipeline is powered by **YOLO**.
-
-### 🔤 Number Plate Recognition
-
-The system detects the vehicle's number plate and uses **OCR (Optical Character Recognition)** to extract the registration number.
-
-Example:
-
-```text
-Detected Plate → MP07AB1234
 ```
-
-### 🗄️ Vehicle Database Verification
-
-The extracted vehicle number is compared with registered vehicle records.
-
-```text
-MP07AB1234
-       ↓
-Database Verification
-       ↓
-Registered?
-   ↙        ↘
- YES        NO
- ↓           ↓
-ALLOW      ALERT
-```
-
-### 🚨 Unauthorized Vehicle Alerts
-
-If a vehicle is not registered or appears in the blocklist, the system can generate a security alert for the gate staff.
-
-### 👤 Student & Vehicle Management
-
-Security/admin users can view:
-
-* Student information
-* Registered vehicles
-* Vehicle owners
-* Registration numbers
-* Blocklisted vehicles
-
-### 📋 Entry & Verification Logs
-
-The system maintains records of campus entry activity, including:
-
-* Vehicle number
-* Vehicle type
-* Verification result
-* Date & time
-* Gate
-* Owner information
-
-### 📹 Live Gate Monitoring
-
-The dashboard provides a centralized view of gate activity and verification results.
-
----
-
-## 🏗️ System Architecture
-
-```text
-                 📹 CCTV / Camera
-                       │
-                       ▼
-              ┌─────────────────┐
-              │  Vehicle Input  │
-              └────────┬────────┘
-                       │
-                       ▼
-                ┌─────────────┐
-                │    YOLO     │
-                │    Model    │
-                └──────┬──────┘
-                       │
-                Vehicle Detection
-                       │
-                       ▼
-             ┌──────────────────┐
-             │ Number Plate     │
-             │ Detection        │
-             └────────┬─────────┘
-                      │
-                      ▼
-                ┌───────────┐
-                │    OCR    │
-                └─────┬─────┘
-                      │
-                Plate Number
-                      │
-                      ▼
-             ┌─────────────────┐
-             │ College Database│
-             └────────┬────────┘
-                      │
-                      ▼
-             ┌─────────────────┐
-             │ Verification    │
-             │ & Rule Engine   │
-             └────────┬────────┘
-                      │
-              ┌───────┴────────┐
-              ▼                ▼
-          ✅ VERIFIED       🚨 ALERT
-              │                │
-              └───────┬────────┘
-                      ▼
-                📊 Dashboard
-```
-
----
-
-## 🧠 AI Pipeline
-
-Campus Guardian uses the following computer vision pipeline:
-
-```text
-Input Image / Video
-        ↓
-Vehicle Detection
-        ↓
-Number Plate Detection
-        ↓
-Image Preprocessing
-        ↓
-OCR
-        ↓
-Plate Number
-        ↓
-Database Matching
-        ↓
-Verification Result
-```
-
-### YOLO
-
-YOLO is used for real-time object detection.
-
-Current vehicle classes include:
-
-* `car`
-* `bike`
-* `scooty`
-
-The model can be further extended with additional vehicle classes.
-
-### OCR
-
-OCR is used to convert the characters present on a vehicle number plate into machine-readable text.
-
----
-
-## 🛠️ Technology Stack
-
-### Frontend
-
-* React.js
-* JavaScript
-* HTML5
-* CSS3
-* Vite
-* Chart.js
-
-### Backend
-
-* Node.js
-* Express.js
-* REST API
-
-### AI / Computer Vision
-
-* Python
-* YOLO
-* OpenCV
-* OCR
-* Computer Vision
-
-### Database
-
-* MySQL / SQL Database
-
-### Development Tools
-
-* VS Code
-* Git
-* GitHub
-* Google Colab
-* Roboflow
-* Label Studio
-
----
-
-## 📁 Project Structure
-
-```text
 Campus-Guardian/
-│
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   ├── package.json
-│   └── ...
-│
-├── backend/
-│   ├── routes/
-│   ├── controllers/
-│   ├── models/
-│   ├── middleware/
-│   ├── server.js
-│   └── package.json
-│
-├── ai/
-│   ├── models/
-│   ├── datasets/
-│   ├── detection/
-│   ├── ocr/
-│   └── ...
-│
-├── database/
-│   ├── schema.sql
-│   └── seed.sql
-│
-├── docs/
-│
-├── .gitignore
-└── README.md
+├─ frontend/      React + Vite dashboard                 → deployed to Vercel (Root Directory = frontend)
+├─ backend/       FastAPI + SQLAlchemy, light deps       → deployed to Render (service root = repo root, see render.yaml)
+├─ ai-service/    HEAVY: analyze_video.py, weights, training notebooks, requirements.txt (torch/ultralytics/easyocr)
+├─ demo-data/     results.json (+ schema, demo vehicles, demo.mp4)
+├─ docs/          project overview
+└─ render.yaml
 ```
 
-> The exact folder structure may vary depending on the implementation.
+## Run the full project locally (any video)
 
----
-
-## ⚙️ Installation & Setup
-
-### 1. Clone the Repository
+Windows / VS Code shown; use `source venv/bin/activate` on macOS/Linux.
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/Campus-Guardian.git
-cd Campus-Guardian
-```
+# 1. backend + AI deps
+cd backend
+python -m venv venv && venv\Scripts\activate
+pip install -r requirements.txt
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu   # CPU build, much smaller
+pip install -r ../ai-service/requirements.txt
+copy .env.example .env          # then set DEMO_MODE=false in .env
+python -m app.seed              # users, gates, demo students/vehicles
+python run.py                   # http://localhost:8000/docs
 
-### 2. Install Frontend Dependencies
-
-```bash
+# 2. frontend (new terminal)
 cd frontend
 npm install
+copy .env.example .env          # VITE_API_URL=http://localhost:8000
+npm run dev                     # http://localhost:5173
 ```
 
-Start the frontend:
+Sign in (`guard1@campus.edu` / `Guard@123`, or `admin@campus.edu` / `Admin@123`) → **Video Analysis** → upload a video.
+Progress is shown while the pipeline runs; results play back in sync with the video and are also written to *Entry Logs* and *Alerts*.
+
+## Refresh the demo data (after changing the video or model)
 
 ```bash
-npm run dev
+python ai-service/analyze_video.py path\to\gate.mp4 --publish     # writes demo-data/results.json, copies the video
 ```
+Already have detections from Colab? `python ai-service/convert_pipeline_output.py detections.json gate.mp4 --publish`.
+Edit `demo-data/demo_vehicles.json` to choose which plates in the video are registered / blocklisted (unlisted plates → DENIED).
+Commit `demo-data/` and `frontend/public/demo.mp4`, push, and both hosts redeploy.
 
-### 3. Install Backend Dependencies
+## Plate accuracy
+`ai-service/plate_fix.py` corrects OCR look-alike slips using the Indian plate pattern (`MP07SA1908`: 2 letters, 2 digits, 1–3 letters, 4 digits),
+and events use character-by-character voting across all frames of a vehicle. Measure on your own video:
+`python ai-service/evaluate.py demo-data/results.json MP07SA1908 MP07ME0643 ...` (exact-match %, character similarity, false events).
+If detection (not OCR) is the weak part, retrain the detector in Colab with more/harder images (`ai-service/training/`) and replace `ai-service/weights/plate_best.pt`.
 
-Open another terminal:
+## Deployment
+Step-by-step (Aiven → Render → Vercel, env vars, checklist): **[DEPLOY.md](DEPLOY.md)**.
 
-```bash
-cd backend
-npm install
+## Results format (excerpt)
+```json
+{ "timestamp": 3.3, "plate_text": "MP07AB1234", "plate_confidence": 0.93,
+  "face_match_name": null, "face_score": null,
+  "db_status": "REGISTERED", "decision": "ALLOWED",
+  "bbox": { "x": 0.38, "y": 0.58, "w": 0.16, "h": 0.07 } }
 ```
+`face_*` is `null` when face verification was not performed. Full schema: `demo-data/results.schema.json`.
 
-Start the backend:
-
-```bash
-npm run dev
-```
-
-or:
-
-```bash
-node server.js
-```
-
-### 4. Setup AI Environment
-
-Create a Python virtual environment:
-
-```bash
-python -m venv venv
-```
-
-Activate it on Windows:
-
-```bash
-venv\Scripts\activate
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## 🔐 Environment Variables
-
-Create a `.env` file inside the backend directory.
-
-Example:
-
-```env
-PORT=5000
-DATABASE_URL=your_database_connection
-JWT_SECRET=your_secret_key
-```
-
-⚠️ **Do not upload your `.env` file or API keys to GitHub.**
-
-Add it to `.gitignore`:
-
-```text
-.env
-node_modules/
-venv/
-__pycache__/
-```
-
----
-
-## 📊 Dashboard Modules
-
-The system contains different modules for campus security management.
-
-### Security Dashboard
-
-Provides an overview of:
-
-* Total entries
-* Verified vehicles
-* Unauthorized attempts
-* Active alerts
-* Gate activity
-
-### Vehicle Management
-
-Allows authorized users to manage:
-
-* Registered vehicles
-* Vehicle owners
-* Registration numbers
-* Blocklisted vehicles
-
-### Current Verification
-
-Displays the latest vehicle verification result.
-
-```text
-Vehicle Detected
-       ↓
-Plate: MP07AB1234
-       ↓
-Database Match
-       ↓
-✅ VERIFIED
-```
-
-### Recent Alerts
-
-Shows suspicious or unauthorized entry attempts.
-
-### Entry Logs
-
-Maintains an auditable record of campus entries and verification results.
-
----
-
-## 🔒 Security
-
-Campus Guardian is designed with security and accountability in mind.
-
-Important security considerations include:
-
-* Role-based access
-* Authentication
-* Database validation
-* Verification logs
-* Unauthorized vehicle alerts
-* Protected environment variables
-* Audit history
-
----
-
-## 🎯 Future Scope
-
-The project can be further enhanced with:
-
-* 👤 Face recognition for student/staff verification
-* 📱 Mobile application for security staff
-* 📹 Multiple CCTV camera integration
-* 🔔 Real-time notifications
-* 🧠 Improved AI-based anomaly detection
-* 🏫 Multi-gate campus management
-* ☁️ Cloud deployment
-* 📈 Advanced security analytics
-* 🎫 QR/College ID verification
-* 🚘 Automatic barrier/gate integration
-
----
-
-## 🌟 Advantages
-
-### Security
-
-Automated verification can help identify unauthorized vehicles quickly.
-
-### Efficiency
-
-Reduces the time required for manual vehicle verification.
-
-### Accuracy
-
-Computer vision and OCR reduce dependence on manual data entry.
-
-### Monitoring
-
-Provides centralized visibility of campus gate activity.
-
-### Record Keeping
-
-Maintains digital verification and entry history.
-
----
-
-## 📸 Screenshots
-
-Add screenshots of your application here:
-
-```text
-docs/
-├── dashboard.png
-├── vehicle-management.png
-├── verification.png
-├── alerts.png
-└── entry-logs.png
-```
-
-Example:
-
-![Dashboard](docs/dashboard.png)
-
----
-
-## 👩‍💻 Team
-
-**Campus Guardian Team**
-
-Developed as a college project at:
-
-**Madhav Institute of Technology & Science (MITS), Gwalior**
-
----
-
-## 📜 Project Status
-
-🚧 **Currently under development**
-
-The project is being developed as an AI-powered smart campus security solution with vehicle detection, number plate recognition, OCR-based verification, database integration, and security monitoring.
-
----
-
-## ⭐ Support
-
-If you find this project useful, consider giving the repository a ⭐ on GitHub.
-
----
-
-### 🛡️ Campus Guardian
-
-**Smarter Entry. Safer Campus.**
+## Tech
+React · Vite · Tailwind · FastAPI · SQLAlchemy · MySQL/SQLite · JWT + Google sign-in · YOLO (Ultralytics) · EasyOCR

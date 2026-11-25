@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Activity,
+  Film,
   BarChart3,
   Bell,
   Car,
@@ -47,6 +48,12 @@ const NAV = [
     label: "Live Gate",
     icon: Activity,
     perm: "live",
+  },
+  {
+    to: "/analysis",
+    label: "Video Analysis",
+    icon: Film,
+    perm: "analysis",
   },
   {
     to: "/students",
