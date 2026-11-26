@@ -71,7 +71,11 @@ def _seed_demo_vehicles(db):
         items = json.load(f)
     for i, it in enumerate(items, 1):
         plate = normalize_plate(it["plate"])
-        if db.query(Vehicle).filter(Vehicle.registration_number == plate).first():
+        existing = db.query(Vehicle).filter(Vehicle.registration_number == plate).first()
+        if existing:  # re-running the seed applies edits to demo_vehicles.json (status / blocklist)
+            existing.status = it.get("status", "active")
+            existing.is_blocklisted = bool(it.get("blocklisted"))
+            existing.block_reason = BLOCK_REASON if it.get("blocklisted") else None
             continue
         sid = f"DEMO{i:03d}"
         student = db.query(Student).filter(Student.student_id == sid).first()

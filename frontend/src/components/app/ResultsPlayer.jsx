@@ -58,7 +58,9 @@ export default function ResultsPlayer({ results, demoMode = false }) {
   const videoRef = useRef(null);
   const [t, setT] = useState(0);
   const events = useMemo(() => results?.events ?? [], [results]);
-  const vw = results?.video?.width || 16, vh = results?.video?.height || 9;
+  // Use the browser's own idea of the video size so the overlay can never drift from the picture.
+  const [dims, setDims] = useState(null);
+  const vw = dims?.w || results?.video?.width || 16, vh = dims?.h || results?.video?.height || 9;
 
   // currentTime -> state, ~60 fps while playing (also catches seeking & loop restarts).
   useEffect(() => {
@@ -96,7 +98,8 @@ export default function ResultsPlayer({ results, demoMode = false }) {
       <div className="grid gap-3 xl:grid-cols-3">
         <Card title="Gate camera" className="xl:col-span-2" bodyClassName="p-3">
           <div className="relative w-full overflow-hidden rounded border border-border bg-black" style={{ aspectRatio: `${vw} / ${vh}` }}>
-            <video ref={videoRef} src={mediaUrl(results.video?.src)} className="absolute inset-0 h-full w-full" controls loop muted playsInline autoPlay />
+            <video ref={videoRef} src={mediaUrl(results.video?.src)} className="absolute inset-0 h-full w-full object-fill" controls loop muted playsInline autoPlay
+              onLoadedMetadata={(e) => setDims({ w: e.currentTarget.videoWidth, h: e.currentTarget.videoHeight })} />
             {/* overlay: pointer-events none so the native controls stay clickable */}
             <div className="pointer-events-none absolute inset-0">
               {visible.map((e) => {

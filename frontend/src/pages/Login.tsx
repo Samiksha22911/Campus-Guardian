@@ -9,17 +9,21 @@ import { ShieldCheck } from "lucide-react";
 import { ThemeToggleButton } from "@/components/app/ThemeToggleButton";
 import GoogleSignInButton from "@/components/app/GoogleSignInButton";
 
+// Hosted demo (VITE_DEMO_MODE=true): one-click recruiter login, and land on the Video Analysis page.
+const DEMO = import.meta.env.VITE_DEMO_MODE === "true";
+const HOME = DEMO ? "/analysis" : "/dashboard";
+
 function LoginPage() {
   const { login, loginWithGoogle, user, hydrated } = useApp();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("guard1@campus.edu");
-  const [password, setPassword] = useState("Guard@123");
+  const [email, setEmail] = useState(DEMO ? "recruiter@campus.edu" : "guard1@campus.edu");
+  const [password, setPassword] = useState(DEMO ? "Demo@123" : "Guard@123");
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (hydrated && user) navigate("/dashboard", { replace: true });
+    if (hydrated && user) navigate(HOME, { replace: true });
   }, [hydrated, user, navigate]);
 
   return (
@@ -38,8 +42,32 @@ function LoginPage() {
           <ThemeToggleButton className="ml-auto" />
         </div>
 
+        {DEMO ? (
+          <div className="mt-6 space-y-2">
+            <Button
+              type="button"
+              className="w-full"
+              disabled={submitting}
+              onClick={async () => {
+                setError("");
+                setSubmitting(true);
+                const res = await login("recruiter@campus.edu", "Demo@123");
+                setSubmitting(false);
+                if (!res.ok) setError(res.error ?? "Could not start the demo");
+                else navigate(HOME);
+              }}
+            >
+              {submitting ? "Starting demo…" : "Enter the demo as a recruiter (one click)"}
+            </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              The first load can take up to a minute while the free server wakes up.
+            </p>
+            <p className="pt-2 text-center font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground">or sign in manually</p>
+          </div>
+        ) : null}
+
         <form
-          className="mt-6 space-y-4"
+          className={DEMO ? "mt-3 space-y-4" : "mt-6 space-y-4"}
           onSubmit={async (e) => {
             e.preventDefault();
             setError("");
@@ -47,7 +75,7 @@ function LoginPage() {
             const res = await login(email, password);
             setSubmitting(false);
             if (!res.ok) setError(res.error ?? "Sign-in failed");
-            else navigate("/dashboard");
+            else navigate(HOME);
           }}
         >
           <div className="space-y-1.5">
@@ -95,6 +123,7 @@ function LoginPage() {
             <p>Live demo — recruiter login (read-mostly):</p>
             <p>recruiter@campus.edu / Demo@123</p>
             <p className="pt-1">Then open “Video Analysis” in the sidebar.</p>
+            <p className="pt-2">Student view: “Student? Register your vehicle” below, or sign in at /portal with STU2009 / Student@123.</p>
           </div>
         ) : null}
 

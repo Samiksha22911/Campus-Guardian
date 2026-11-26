@@ -12,17 +12,107 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from plate_fix import fix_indian_plate  # noqa: E402
+from plate_fix import assemble_plate, fix_indian_plate, is_valid_format, plate_score  # noqa: E402
 from results_format import apply_lookup, build_results, clean_plate, group_readings, validate_results  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 
 
+def join_text_lines(frags):
+    """frags = [(box4pts, text, conf)]. Two-line plates (MP.07 / SA.1908) must be read top line first,
+    then left-to-right inside each line - sorting by x alone interleaves the lines and scrambles digits."""
+    if not frags:
+        return "", 0.0
+    items = []
+    for box, text, conf in frags:
+        ys = [pt[1] for pt in box]
+        xs = [pt[0] for pt in box]
+        items.append({"yc": sum(ys) / 4, "h": max(ys) - min(ys), "x": min(xs), "t": text, "c": conf})
+    items.sort(key=lambda i: i["yc"])
+    med_h = sorted(i["h"] for i in items)[len(items) // 2] or 1
+    lines = []
+    for it in items:
+        if lines and abs(it["yc"] - sum(i["yc"] for i in lines[-1]) / len(lines[-1])) < 0.6 * med_h:
+            lines[-1].append(it)
+        else:
+            lines.append([it])
+    text = "".join(i["t"] for ln in lines for i in sorted(ln, key=lambda i: i["x"]))
+    return text, sum(i["c"] for i in items) / len(items)
+
+
+OCR_ALLOW = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-"   # '.' allowed so the printed dot is not misread as a letter/digit
+
+
+def _rotate(img, angle):
+    import cv2
+
+    h, w = img.shape[:2]
+    m = cv2.getRotationMatrix2D((w / 2, h / 2), angle, 1.0)
+    cos, sin = abs(m[0, 0]), abs(m[0, 1])
+    nw, nh = int(h * sin + w * cos), int(h * cos + w * sin)
+    m[0, 2] += nw / 2 - w / 2
+    m[1, 2] += nh / 2 - h / 2
+    return cv2.warpAffine(img, m, (nw, nh), borderMode=cv2.BORDER_REPLICATE)
+
+
+def read_plate_variants(reader, crop):
+    """OCR several versions of the crop (and, if needed, slightly rotated ones), pool every text fragment,
+    and assemble head (MP07) + tail (SA1908). Returns candidate dicts, best first."""
+    import cv2
+
+    h, w = crop.shape[:2]
+    scale = max(1.0, 160.0 / max(h, 1))
+    big = cv2.resize(crop, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_CUBIC) if scale > 1 else crop
+    gray = cv2.cvtColor(big, cv2.COLOR_BGR2GRAY)
+    eq = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(cv2.bilateralFilter(gray, 9, 17, 17))
+    thr = cv2.adaptiveThreshold(eq, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 15)
+
+    cands, pool = [], []
+
+    def run(name, img):
+        # width_ths: merge boxes across the wide gap in 'MP.07   ME0643'; low_text: keep faint characters
+        res = reader.readtext(img, detail=1, paragraph=False, allowlist=OCR_ALLOW,
+                              width_ths=1.0, low_text=0.3, text_threshold=0.5)
+        frags = [(b, t, c) for (b, t, c) in res if c >= 0.15]
+        pool.extend((t, float(c)) for _, t, c in frags)
+        joined, conf = join_text_lines(frags)
+        text = fix_indian_plate(clean_plate(joined))
+        if len(text) >= 4:
+            cands.append({"variant": name, "fragments": [(t, round(float(c), 2)) for _, t, c in frags],
+                          "text": text, "conf": float(conf), "score": plate_score(text) * float(conf)})
+
+    for name, img in (("raw", big), ("clahe", eq), ("threshold", thr)):
+        run(name, img)
+    if not assemble_plate(pool)["full"]:          # plate is probably tilted: try a few angles
+        for ang in (12, -12, 25, -25):
+            run(f"clahe{ang:+d}", _rotate(eq, ang))
+            run(f"raw{ang:+d}", _rotate(big, ang))
+
+    asm = assemble_plate(pool)
+    for kind in ("full", "head", "tail"):
+        if asm[kind]:
+            text, conf = asm[kind]
+            cands.append({"variant": f"assembled-{kind}", "fragments": [], "text": text, "conf": conf,
+                          "score": (4.0 if kind == "full" else 1.0) * conf})
+    return sorted(cands, key=lambda c: -c["score"])
+
+
+def pick_readings(cands):
+    """Best overall reading + best head + best tail (the tracker joins halves seen in different frames)."""
+    if not cands:
+        return []
+    out = [(cands[0]["text"], cands[0]["conf"])]
+    for kind in ("assembled-head", "assembled-tail"):
+        c = next((x for x in cands if x["variant"] == kind), None)
+        if c and c["text"] not in [t for t, _ in out]:
+            out.append((c["text"], c["conf"]))
+    return out
+
+
 def _build_models(weights_path, device, plate_conf):
     from ultralytics import YOLO
     import easyocr
-    import cv2
 
     yolo = YOLO(weights_path)
     reader = easyocr.Reader(["en"], gpu=(device != "cpu"))
@@ -38,22 +128,7 @@ def _build_models(weights_path, device, plate_conf):
         return out
 
     def ocr(crop):
-        # Same strategy as the backend's per-frame pipeline: preprocessed crop first, raw crop as fallback.
-        gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
-        h, w = gray.shape[:2]
-        scale = max(1, 200 // max(h, 1))
-        if scale > 1:
-            gray = cv2.resize(gray, (w * scale, h * scale), interpolation=cv2.INTER_CUBIC)
-        gray = cv2.equalizeHist(cv2.bilateralFilter(gray, 11, 17, 17))
-        thr = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 15)
-        for img in (thr, crop):
-            res = reader.readtext(img, detail=1, paragraph=False, allowlist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-            res.sort(key=lambda r: r[0][0][0])
-            frags = [(t, c) for (_, t, c) in res if c >= 0.3]
-            text = fix_indian_plate(clean_plate("".join(t for t, _ in frags)))
-            if len(text) >= 4:
-                return text, sum(c for _, c in frags) / len(frags)
-        return None, 0.0
+        return pick_readings(read_plate_variants(reader, crop)) or [(None, 0.0)]
 
     return detect, ocr
 
@@ -78,18 +153,22 @@ def analyze_video(video_path, weights_path, lookup=None, plate_conf=0.4, device=
         ok, frame = cap.read()
         if not ok:
             break
+        height, width = frame.shape[:2]   # ground truth: the size of the frames we actually analyse
         if idx % step == 0:
             t = idx / fps
             for (x1, y1, x2, y2, dconf) in detect_fn(frame):
                 bw, bh = x2 - x1, y2 - y1
-                px1, py1 = max(0, int(x1 - bw * 0.06)), max(0, int(y1 - bh * 0.06))
-                px2, py2 = min(width, int(x2 + bw * 0.06)), min(height, int(y2 + bh * 0.06))
+                px1, py1 = max(0, int(x1 - bw * 0.12)), max(0, int(y1 - bh * 0.12))
+                px2, py2 = min(width, int(x2 + bw * 0.12)), min(height, int(y2 + bh * 0.12))
                 crop = frame[py1:py2, px1:px2]
-                text, oconf = ocr_fn(crop) if crop.size else (None, 0.0)
-                readings.append({
-                    "t": t, "text": text, "conf": float(oconf), "det_conf": dconf,
-                    "box": (max(0, x1) / width, max(0, y1) / height, min(bw, width) / width, min(bh, height) / height),
-                })
+                out = ocr_fn(crop) if crop.size else [(None, 0.0)]
+                if isinstance(out, tuple):
+                    out = [out]
+                for text, oconf in out:
+                    readings.append({
+                        "t": t, "text": text, "conf": float(oconf), "det_conf": dconf,
+                        "box": (max(0, x1) / width, max(0, y1) / height, min(bw, width) / width, min(bh, height) / height),
+                    })
             if progress and total:
                 progress(idx / total)
         idx += 1

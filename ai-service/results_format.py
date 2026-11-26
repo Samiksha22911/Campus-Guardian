@@ -7,6 +7,8 @@ can all import it. Readings are grouped into one "event" per vehicle pass.
 import difflib
 from datetime import datetime, timezone
 
+from plate_fix import is_valid_format, merge_head_tail, plate_score
+
 SCHEMA_VERSION = "1.0"
 DB_STATUSES = {"REGISTERED", "UNREGISTERED", "BLOCKLISTED", "INACTIVE", "PENDING",
                "LOW_CONFIDENCE", "NO_PLATE", "NOT_CHECKED"}
@@ -51,13 +53,18 @@ def group_readings(readings, max_gap_s=1.5, min_hits=2, text_sim=0.7, box_iou=0.
         votes = {}
         for x in best["readings"]:
             if x["text"]:
-                votes[x["text"]] = votes.get(x["text"], 0.0) + x["conf"]
+                votes[x["text"]] = votes.get(x["text"], 0.0) + x["conf"] * plate_score(x["text"])
         best["top_text"] = max(votes, key=votes.get) if votes else None
 
     events = []
     for tr in tracks:
         rs = tr["readings"]
         text = tr["top_text"]
+        mconf = None
+        if text and len(rs) < min_hits:
+            continue
+        if not text and len(rs) < min_hits + 1:
+            continue  # a few unreadable boxes are usually noise
         if text:
             same = [x for x in rs if x["text"] and len(x["text"]) == len(text)]
             # character-by-character weighted vote: one bad character in one frame cannot win
@@ -66,13 +73,22 @@ def group_readings(readings, max_gap_s=1.5, min_hits=2, text_sim=0.7, box_iou=0.
                     key=lambda kv: kv[1])[0]
                 for i in range(len(text))
             )
-        readable = [x for x in rs if text and x["text"] and len(x["text"]) == len(text)] if text else []
-        if text and len(rs) < min_hits:
-            continue
-        if not text and len(rs) < min_hits + 1:
-            continue  # a few unreadable boxes are usually noise
-        best = max(readable or rs, key=lambda x: (x["conf"], x["det_conf"]))
-        conf = sum(x["conf"] for x in readable) / len(readable) if readable else 0.0
+            if not is_valid_format(text):  # maybe different frames read different halves of the plate
+                merged = merge_head_tail([(x["text"], x["conf"]) for x in rs if x["text"]])
+                if merged:
+                    text, mconf = merged
+        if mconf is not None:
+            readable, conf = [], mconf
+        else:
+            readable = [x for x in rs if text and x["text"] and len(x["text"]) == len(text)] if text else []
+            conf = sum(x["conf"] for x in readable) / len(readable) if readable else 0.0
+        if mconf is not None:
+            # plate was assembled from two halves: time the decision at the best reading of one of those halves,
+            # not at some unrelated high-confidence noise reading
+            parts = [x for x in rs if x["text"] and len(x["text"]) >= 4 and (text.startswith(x["text"]) or text.endswith(x["text"]))]
+            best = max(parts or rs, key=lambda x: (x["conf"], x["det_conf"]))
+        else:
+            best = max(readable or rs, key=lambda x: (x["conf"], x["det_conf"]))
         events.append({
             "timestamp": round(best["t"], 3),
             "ts_start": round(rs[0]["t"], 3),

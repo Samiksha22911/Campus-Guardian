@@ -73,6 +73,9 @@ def main():
     fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
     w, h = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     dur = (cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0) / fps
+    ok, first = cap.read()
+    if ok:
+        h, w = first.shape[:2]  # decoded size is the truth (phone videos can report a rotated size)
     cap.release()
 
     raw = json.load(open(a.detections_json, encoding="utf-8"))
